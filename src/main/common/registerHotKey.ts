@@ -1,4 +1,4 @@
-import { globalShortcut, BrowserWindow, screen, ipcMain, app} from "electron";
+import { globalShortcut, BrowserWindow, screen, ipcMain, app } from "electron";
 
 const registerHotKey = (mainWindow: BrowserWindow): void => {
   // 设置开机启动
@@ -6,9 +6,9 @@ const registerHotKey = (mainWindow: BrowserWindow): void => {
     const config = global.OP_CONFIG.get();
     app.setLoginItemSettings({
       openAtLogin: config.perf.common.start,
-      openAsHidden: true,
+      openAsHidden: true
     });
-  }
+  };
 
   const init = () => {
     setAutoLogin();
@@ -16,6 +16,8 @@ const registerHotKey = (mainWindow: BrowserWindow): void => {
     globalShortcut.unregisterAll();
     // 注册偏好快捷键
     globalShortcut.register(config.perf.shortCut.showAndHidden, () => {
+      const currentVisibility = mainWindow.isVisible();
+      if (currentVisibility) return mainWindow.hide();
       const { x, y } = screen.getCursorScreenPoint();
       const currentDisplay = screen.getDisplayNearestPoint({ x, y });
       const wx = parseInt(
@@ -32,7 +34,9 @@ const registerHotKey = (mainWindow: BrowserWindow): void => {
       mainWindow.setAlwaysOnTop(true);
       mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
       mainWindow.focus();
-      mainWindow.setVisibleOnAllWorkspaces(false, { visibleOnFullScreen: true });
+      mainWindow.setVisibleOnAllWorkspaces(false, {
+        visibleOnFullScreen: true
+      });
       mainWindow.setPosition(wx, wy);
       mainWindow.show();
     });
@@ -47,13 +51,13 @@ const registerHotKey = (mainWindow: BrowserWindow): void => {
     });
 
     // 注册自定义全局快捷键
-    config.global.forEach((sc) => {
+    config.global.forEach(sc => {
       if (!sc.key || !sc.value) return;
       globalShortcut.register(sc.key, () => {
         mainWindow.webContents.send("global-short-key", sc.value);
       });
     });
-  }
+  };
   init();
   ipcMain.on("re-register", () => {
     init();
