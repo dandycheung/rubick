@@ -46,7 +46,9 @@ const props = defineProps({
     default: 0,
   },
   currentPlugin: {},
-  clipboardFile: () => [],
+  clipboardFile: {
+    default: () => []
+  },
 });
 
 const renderTitle = (title) => {

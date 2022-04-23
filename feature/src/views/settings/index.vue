@@ -106,7 +106,7 @@
                 >
                   {{ item.key }}
                   <MinusCircleOutlined
-                    @click.stop="deleteGlobalKey(e, index)"
+                    @click.stop="deleteGlobalKey(index)"
                   />
                 </div>
               </a-tooltip>
@@ -120,7 +120,7 @@
                 class="value"
                 allowClear
                 :disabled="!item.key"
-                @change="e => changeGlobalValue(index, e.target.value)"
+                @change="(e: InputEvent) => changeGlobalValue(index, (e.target as HTMLInputElement).value)"
               />
             </template>
           </div>
@@ -135,7 +135,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   ToolOutlined,
   LaptopOutlined,
@@ -161,7 +161,7 @@ const examples = [
   }
 ];
 
-const state = reactive({
+const state = reactive<any>({
   shortCut: {},
   common: {},
   local: {},
@@ -200,7 +200,7 @@ const setConfig = debounce(() => {
 
 watch(state, setConfig);
 
-const changeShortCut = (e, key) => {
+const changeShortCut = (e: KeyboardEvent, key: string) => {
   if (e.altKey && e.keyCode !== 18) {
     const compose = `Option+${keycodes[e.keyCode].toUpperCase()}`;
     state.shortCut[key] = compose;
@@ -219,7 +219,7 @@ const changeShortCut = (e, key) => {
   }
 };
 
-const changeGlobalKey = (e, index) => {
+const changeGlobalKey = (e: KeyboardEvent, index: number) => {
   let compose;
   if (e.altKey && e.keyCode !== 18) {
     compose = `Alt+${keycodes[e.keyCode].toUpperCase()}`;
@@ -245,13 +245,12 @@ const changeGlobalKey = (e, index) => {
   }
 };
 
-const changeGlobalValue = (index, value) => {
+const changeGlobalValue = (index: number, value: string) => {
   state.global[index].value = value;
 };
 
-const deleteGlobalKey = (e, index) => {
+const deleteGlobalKey = (index: number) => {
   state.global.splice(index, 1);
-  // delete state.global[index];
 };
 
 const addConfig = () => {

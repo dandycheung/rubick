@@ -1,31 +1,38 @@
 <template>
   <div class="rubick-select">
-    <div class="select-tag" v-show="currentPlugin.cmd">{{ currentPlugin.cmd }}</div>
+    <div class="select-tag" v-show="currentPlugin.cmd">
+      {{ currentPlugin.cmd }}
+    </div>
     <div
       :class="clipboardFile[0].name ? 'clipboard-tag' : 'clipboard-img'"
       v-if="!!clipboardFile.length"
     >
       <img :src="getIcon()" />
       <div class="ellipse">{{ clipboardFile[0].name }}</div>
-      <a-tag color="#aaa" v-if="clipboardFile.length > 1">{{ clipboardFile.length }}</a-tag>
+      <a-tag color="#aaa" v-if="clipboardFile.length > 1">{{
+        clipboardFile.length
+      }}</a-tag>
     </div>
     <a-input
       id="search"
       class="main-input"
-      @input="(e) => changeValue(e)"
-      @keydown.down="(e) => keydownEvent(e, 'down')"
-      @keydown.up="(e) => keydownEvent(e, 'up')"
+      @input="e => changeValue(e)"
+      @keydown.down="e => keydownEvent(e, 'down')"
+      @keydown.up="e => keydownEvent(e, 'up')"
       @keydown="e => checkNeedInit(e)"
       :value="searchValue"
       :placeholder="placeholder || 'Hi, Rubick2'"
-      @keypress.enter="(e) => keydownEvent(e, 'enter')"
-      @keypress.space="(e) => keydownEvent(e, 'space')"
+      @keypress.enter="e => keydownEvent(e, 'enter')"
+      @keypress.space="e => keydownEvent(e, 'space')"
       @focus="emit('focus')"
     >
       <template #suffix>
         <div class="suffix-tool">
           <MoreOutlined @click="showSeparate()" class="icon-more" />
-          <div v-if="currentPlugin && currentPlugin.logo" style="position: relative">
+          <div
+            v-if="currentPlugin && currentPlugin.logo"
+            style="position: relative"
+          >
             <a-spin v-show="pluginLoading" class="loading">
               <template #indicator>
                 <LoadingOutlined style="font-size: 42px" />
@@ -55,18 +62,20 @@ const config = ref(opConfig.get());
 const props: any = defineProps({
   searchValue: {
     type: [String, Number],
-    default: "",
+    default: ""
   },
   placeholder: {
     type: String,
-    default: "",
+    default: ""
   },
   currentPlugin: {},
   pluginLoading: Boolean,
-  clipboardFile: () => [],
+  clipboardFile: {
+    default: () => [] as any[]
+  }
 });
 
-const changeValue = (e) => {
+const changeValue = e => {
   if (props.currentPlugin.name === "rubick-system-feature") return;
   targetSearch({ value: e.target.value });
   emit("onSearch", e);
@@ -79,10 +88,11 @@ const emit = defineEmits([
   "changeSelect",
   "choosePlugin",
   "focus",
-  "readClipboardContent",
+  "clearClipbord",
+  "readClipboardContent"
 ]);
 
-const keydownEvent = (e, key: string) => {
+const keydownEvent = (e: KeyboardEvent, key: string) => {
   const { ctrlKey, shiftKey, altKey, metaKey } = e;
   const modifiers: Array<string> = [];
   ctrlKey && modifiers.push("control");
@@ -93,10 +103,11 @@ const keydownEvent = (e, key: string) => {
     type: "sendPluginSomeKeyDownEvent",
     data: {
       keyCode: e.code,
-      modifiers,
-    },
+      modifiers
+    }
   });
-  const runPluginDisable = e.target.value === "" || props.currentPlugin.name
+  const runPluginDisable =
+    (e.target as HTMLInputElement).value === "" || props.currentPlugin.name;
   switch (key) {
     case "up":
       emit("changeCurrent", -1);
@@ -117,7 +128,7 @@ const keydownEvent = (e, key: string) => {
   }
 };
 
-const checkNeedInit = (e) => {
+const checkNeedInit = e => {
   const { ctrlKey, metaKey } = e;
 
   if (e.target.value === "" && e.keyCode === 8) {
@@ -133,7 +144,7 @@ const targetSearch = ({ value }) => {
   if (props.currentPlugin.name) {
     return ipcRenderer.sendSync("msg-trigger", {
       type: "sendSubInputChangeEvent",
-      data: { text: value },
+      data: { text: value }
     });
   }
 };
@@ -142,7 +153,7 @@ const closeTag = () => {
   emit("changeSelect", {});
   emit("clearClipbord");
   ipcRenderer.send("msg-trigger", {
-    type: "removePlugin",
+    type: "removePlugin"
   });
 };
 
@@ -150,8 +161,8 @@ const showSeparate = () => {
   let pluginMenu: any = [
     {
       label: config.value.perf.common.hideOnBlur ? "钉住" : "自动隐藏",
-      click: changeHideOnBlur,
-    },
+      click: changeHideOnBlur
+    }
   ];
   if (props.currentPlugin && props.currentPlugin.logo) {
     pluginMenu = pluginMenu.concat([
@@ -160,23 +171,23 @@ const showSeparate = () => {
         click: () => {
           ipcRenderer.send("msg-trigger", { type: "openPluginDevTools" });
           // todo
-        },
+        }
       },
       {
         label: "当前插件信息",
         submenu: [
           {
-            label: "简介",
+            label: "简介"
           },
           {
-            label: "功能",
-          },
-        ],
+            label: "功能"
+          }
+        ]
       },
       {
         label: "分离窗口",
-        click: newWindow,
-      },
+        click: newWindow
+      }
     ]);
   }
   let menu = Menu.buildFromTemplate(pluginMenu);
@@ -192,12 +203,14 @@ const changeHideOnBlur = () => {
 
 const getIcon = () => {
   if (props.clipboardFile[0].dataUrl) return props.clipboardFile[0].dataUrl;
-  return props.clipboardFile[0].isFile ? require("../assets/file.png") : require("../assets/folder.png")
+  return props.clipboardFile[0].isFile
+    ? require("../assets/file.png")
+    : require("../assets/folder.png");
 };
 
 const newWindow = () => {
   ipcRenderer.send("msg-trigger", {
-    type: "detachPlugin",
+    type: "detachPlugin"
   });
   // todo
 };
